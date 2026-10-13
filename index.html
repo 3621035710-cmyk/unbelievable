@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5f5f7">
+<title>恋爱载入中... · 姜好的专属空间</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --apple-card: rgba(255, 255, 255, 0.72);
+    --apple-border: rgba(255, 255, 255, 0.9);
+    --apple-text: #1d1d1f;
+    --apple-sub: #86868b;
+    --apple-accent: #0071e3;
+    --theme-color: #B6E9B9;
+    --font-sf: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    background-image: url('https://i.postimg.cc/4NCdpk62/IMG-9095.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: var(--apple-text);
+    font-family: var(--font-sf);
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 1.47059;
+    letter-spacing: -0.016em;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .app {
+    width: min(100%, 414px);
+    height: min(100vh, 896px);
+    background: transparent;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+  }
+
+  /* 顶栏 */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px 8px;
+    flex: 0 0 auto;
+    z-index: 5;
+  }
+
+  .topbar-close {
+    width: 30px; height: 30px;
+    display: grid; place-items: center;
+    border: none; background: rgba(0, 0, 0, 0.05);
+    color: var(--apple-sub); font-size: 13px; font-weight: 600;
+    cursor: pointer; border-radius: 50%;
+    transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  .topbar-close:active { background: rgba(0, 0, 0, 0.1); transform: scale(0.92); }
+
+  .page-indicator {
+    font-size: 12px; color: var(--apple-sub);
+    font-weight: 500; letter-spacing: -0.01em;
+  }
+
+  /* 视窗滚动区 */
+  .viewport {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 4px 0 24px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  .viewport::-webkit-scrollbar { width: 0; }
+
+  .page {
+    display: none;
+    padding: 0 0 16px;
+    animation: pageFade 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  .page.active { display: block; }
+
+  @keyframes pageFade {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 玻璃拟态卡片 */
+  .glass-card {
+    background: var(--apple-card);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 0.5px solid var(--apple-border);
+    border-radius: 20px;
+    margin: 0 16px 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  }
+
+  .section-title {
+    padding: 16px 24px 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--theme-color);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* 界面 1：主页 */
+  .profile-box {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 22px 20px;
+  }
+
+  .avatar {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: #fff;
+    display: grid; place-items: center;
+    border: 0.5px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+  .profile-info { flex: 1; min-width: 0; }
+  .profile-name { font-size: 20px; font-weight: 600; color: var(--apple-text); letter-spacing: -0.02em; }
+  .profile-sub { font-size: 12px; color: var(--apple-sub); margin-top: 3px; line-height: 1.4; }
+
+  .info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 20px;
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.04);
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-label { font-size: 13.5px; color: var(--apple-sub); font-weight: 400; }
+  .info-value { font-size: 13.5px; color: var(--apple-text); font-weight: 500; text-align: right; }
+
+  .static-box {
+    padding: 16px 20px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--apple-text);
+  }
+
+  /* 99% 关系状态环 */
+  .ring-wrap { display: flex; align-items: center; gap: 16px; padding: 18px 20px; }
+  .ring {
+    position: relative; flex: 0 0 54px; width: 54px; height: 54px;
+    border-radius: 50%; background: conic-gradient(var(--theme-color) 0 99%, rgba(0,0,0,0.06) 99% 100%);
+  }
+  .ring::after {
+    content: "99%"; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%); width: 40px; height: 40px;
+    border-radius: 50%; background: #fff; display: grid; place-items: center;
+    font-size: 11.5px; font-weight: 600; color: #438a47;
+  }
+  .ring-text strong { display: block; font-size: 13.5px; font-weight: 600; color: var(--apple-text); margin-bottom: 2px; }
+  .ring-text span { font-size: 12px; color: var(--apple-sub); }
+
+  .chip-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 14px; }
+  .chip {
+    display: flex; align-items: center; justify-content: center;
+    padding: 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.5);
+    border: 0.5px solid var(--apple-border); font-size: 13px; font-weight: 500;
+    color: var(--apple-text); cursor: pointer; text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  .chip:active { background: rgba(255, 255, 255, 0.9); transform: scale(0.97); }
+
+  /* 界面 2：提醒 & 音乐 & 计划表 */
+  .plan-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 13px 20px; border-bottom: 0.5px solid rgba(0, 0, 0, 0.04);
+    cursor: pointer; user-select: none; transition: background 0.15s;
+  }
+  .plan-item:last-child { border-bottom: none; }
+  .plan-check {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 1.5px solid var(--apple-sub); display: grid; place-items: center;
+    font-size: 10px; color: transparent; transition: all 0.2s;
+  }
+  .plan-item.done .plan-check { background: var(--theme-color); border-color: var(--theme-color); color: #fff; }
+  .plan-text { font-size: 13.5px; color: var(--apple-text); flex: 1; font-weight: 500; }
+  .plan-item.done .plan-text { text-decoration: line-through; color: var(--apple-sub); }
+
+  /* 音乐播放器 */
+  .music-card {
+    background: var(--apple-card);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 0.5px solid var(--apple-border);
+    border-radius: 20px;
+    padding: 18px; margin: 0 16px 12px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  }
+  .music-top { display: flex; align-items: center; gap: 14px; }
+  .music-cover {
+    width: 48px; height: 48px; border-radius: 12px; background: rgba(0,0,0,0.04);
+    display: grid; place-items: center; color: var(--theme-color); font-size: 18px;
+    flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .music-meta { flex: 1; min-width: 0; }
+  .music-title { font-size: 14px; font-weight: 600; color: var(--apple-text); }
+  .music-artist { font-size: 12px; color: var(--apple-sub); margin-top: 1px; }
+
+  .music-progress { margin-top: 14px; height: 3px; border-radius: 1.5px; background: rgba(0,0,0,0.06); overflow: hidden; }
+  .music-progress-fill { width: 0%; height: 100%; background: var(--theme-color); border-radius: 1.5px; transition: width 0.3s linear; }
+
+  .music-controls { display: flex; align-items: center; justify-content: center; gap: 28px; margin-top: 14px; }
+  .m-btn { border: none; background: transparent; color: var(--apple-text); font-size: 15px; cursor: pointer; }
+  .m-btn-play {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--theme-color); color: #fff; display: grid; place-items: center; font-size: 14px;
+    box-shadow: 0 4px 12px rgba(182, 233, 185, 0.4);
+    transition: transform 0.15s;
+  }
+  .m-btn-play:active { transform: scale(0.92); }
+
+  /* 界面 3：纯邮箱 & 交互界面 (完全全屏对齐) */
+  .mail-screen {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    background-image: url('https://i.postimg.cc/wTdq75zV/IMG-9088.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 100;
+    display: none; flex-direction: column;
+    animation: appleModalIn 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  .mail-screen.active { display: flex; }
+  @keyframes appleModalIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+
+  .mail-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(20px);
+    border-bottom: 0.5px solid rgba(0,0,0,0.06); color: var(--apple-text);
+  }
+  .mail-back { border: none; background: transparent; color: var(--apple-accent); font-size: 15px; font-weight: 500; cursor: pointer; }
+  .mail-header-title { font-size: 14px; font-weight: 600; color: var(--apple-text); }
+
+  .mail-body {
+    flex: 1; overflow-y: auto; padding: 20px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  /* 邮件气泡（应用 #B6E9B9 主题色玻璃拟态模板） */
+  .message-container { display: flex; width: 100%; margin-bottom: 4px; }
+  .message-container.sent { justify-content: flex-end; }
+  .message-container.received { justify-content: flex-start; }
+
+  .message-bubble {
+    max-width: 78%;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.35) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08) !important;
+    border-radius: 20px !important;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--apple-text) !important;
+  }
+  .message-container.sent .message-bubble {
+    background: rgba(182, 233, 185, 0.45) !important;
+    border-color: rgba(255, 255, 255, 0.7) !important;
+  }
+
+  .mail-footer {
+    display: flex; align-items: center; gap: 10px; padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+    background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(20px);
+    border-top: 0.5px solid rgba(0,0,0,0.06);
+  }
+  .mail-input {
+    flex: 1; border: 0.5px solid rgba(0,0,0,0.1); border-radius: 20px; padding: 10px 16px;
+    font-size: 13.5px; outline: none; background: rgba(255,255,255,0.7); color: var(--apple-text);
+  }
+  .mail-send {
+    border: none; background: var(--apple-accent); color: #fff;
+    width: 32px; height: 32px; border-radius: 50%;
+    cursor: pointer; display: grid; place-items: center; font-size: 13px;
+    transition: transform 0.15s;
+  }
+  .mail-send:active { transform: scale(0.9); }
+
+  .mail-card-btn {
+    display: flex; align-items: center; gap: 14px;
+    padding: 18px 20px; margin: 0 16px 12px;
+    background: var(--apple-card); backdrop-filter: blur(25px);
+    border: 0.5px solid var(--apple-border); border-radius: 20px;
+    cursor: pointer; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  }
+  .mail-card-btn:active { transform: scale(0.98); }
+  .mail-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: rgba(255,255,255,0.8); color: var(--theme-color);
+    display: grid; place-items: center; font-size: 18px;
+  }
+  .mail-info { flex: 1; }
+  .mail-title { font-size: 14.5px; font-weight: 600; color: var(--apple-text); }
+  .mail-desc { font-size: 12px; color: var(--apple-sub); margin-top: 2px; }
+  .mail-badge { background: #ff3b30; color: #fff; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; }
+
+  /* 模态弹窗 */
+  .custom-modal {
+    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4);
+    z-index: 200; display: none; align-items: center; justify-content: center; padding: 24px;
+    backdrop-filter: blur(10px);
+  }
+  .custom-modal.active { display: flex; }
+  .modal-box {
+    background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(30px);
+    border: 0.5px solid rgba(255, 255, 255, 0.9); border-radius: 24px;
+    width: 100%; max-width: 360px; max-height: 85vh; overflow-y: auto;
+    padding: 22px; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  }
+  .modal-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .modal-title { font-size: 15px; font-weight: 600; color: var(--apple-text); }
+  .modal-close { background: rgba(0,0,0,0.06); border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 11px; color: var(--apple-sub); }
+
+  /* 九宫格相册展示网格 */
+  .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; }
+  .photo-grid img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; border: 0.5px solid rgba(0,0,0,0.1); }
+
+  /* Twitter 风格帖子样式弹窗 */
+  .twitter-card {
+    background: #fff; border-radius: 16px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  .tw-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .tw-avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; }
+  .tw-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .tw-name { font-weight: 600; font-size: 14px; }
+  .tw-handle { font-size: 12px; color: var(--apple-sub); }
+  .tw-content { font-size: 13.5px; line-height: 1.6; margin-bottom: 12px; color: var(--apple-text); }
+  .tw-footer { display: flex; justify-content: space-around; font-size: 12px; color: var(--apple-sub); border-top: 0.5px solid #eee; padding-top: 10px; }
+  .tw-stat span { font-weight: 600; color: var(--apple-text); margin-left: 4px; }
+
+  /* 底部导航栏 */
+  .tabbar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 10px 16px calc(14px + env(safe-area-inset-bottom));
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(25px);
+    border-top: 0.5px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.03);
+    z-index: 10;
+  }
+
+  .tab-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: var(--apple-sub);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 32px;
+    border-radius: 16px;
+    transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  .tab-btn.active {
+    color: var(--apple-accent);
+    background: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- 顶栏 -->
+  <header class="topbar">
+    <button class="topbar-close" id="closeBtn">✕</button>
+    <span class="page-indicator"><span id="curPage">1</span> / 3</span>
+  </header>
+
+  <!-- 页面主容器 -->
+  <main class="viewport" id="viewport">
+
+    <!-- ============ 1 界面：主页 (文字不可编辑) ============ -->
+    <section class="page active" data-page="0">
+      <div class="glass-card profile-box">
+        <div class="avatar">
+          <img src="https://i.postimg.cc/0NbQv8G6/IMG-9119.jpg" id="avatarImg" alt="头像">
+        </div>
+        <div class="profile-info">
+          <div class="profile-name">姜好 / 姜姜</div>
+          <div class="profile-sub">约会日 · u and me<br>Weather：晴... 适合睡觉</div>
+        </div>
+      </div>
+
+      <div class="section-title">基本信息查阅</div>
+      <div class="glass-card">
+        <div class="info-row"><span class="info-label">约会装扮</span><span class="info-value">耳坠正太</span></div>
+        <div class="info-row"><span class="info-label">属性</span><span class="info-value">21 · 双子 · 八无 · LE ENFP</span></div>
+        <div class="info-row"><span class="info-label">想做的事</span><span class="info-value">只想和你做</span></div>
+        <div class="info-row"><span class="info-label">约会地点</span><span class="info-value">余烬</span></div>
+      </div>
+
+      <div class="section-title">自我介绍</div>
+      <div class="glass-card">
+        <div class="static-box">很想你，今天天气很好，适合睡觉，睡荤的还是素的？</div>
+      </div>
+
+      <div class="section-title">关系状态与备注</div>
+      <div class="glass-card">
+        <div class="ring-wrap">
+          <div class="ring" aria-hidden="true"></div>
+          <div class="ring-text">
+            <strong>我们什么关系？蜜雪冰城吧</strong>
+            <span>520.1314.…姜好 · @我们没完。</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="static-box">劳模店员获奖感言：感恩自己，鸣谢自己，成功勾引到很好很好的你。</div>
+      </div>
+
+      <div class="section-title">快捷通道</div>
+      <div class="glass-card">
+        <div class="chip-grid">
+          <button class="chip" id="openBanping">［板评］查看</button>
+          <button class="chip" id="openKalei">［卡类］查看</button>
+          <button class="chip" id="openPaiban">［排班表］编辑</button>
+          <button class="chip" id="openTwitter">亲爱的先听我说 ↗</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 2 界面：提醒 & 音乐播放器 & 计划表 & 旋律层级 ============ -->
+    <section class="page" data-page="1">
+      <div class="section-title">Plan List 计划表</div>
+      <div class="glass-card">
+        <div class="plan-item done" data-plan>
+          <span class="plan-check">✓</span>
+          <div class="plan-text">Drink water</div>
+        </div>
+        <div class="plan-item done" data-plan>
+          <span class="plan-check">✓</span>
+          <div class="plan-text">Read a book</div>
+        </div>
+        <div class="plan-item" data-plan>
+          <span class="plan-check">✓</span>
+          <div class="plan-text">Early to bed</div>
+        </div>
+        <div class="plan-item" data-plan>
+          <span class="plan-check">✓</span>
+          <div class="plan-text">Check daily schedule</div>
+        </div>
+        <div class="plan-item" data-plan>
+          <span class="plan-check">✓</span>
+          <div class="plan-text">Enjoy dating time</div>
+        </div>
+      </div>
+
+      <div class="section-title">Now Playing (音乐播放器 - 后台常驻)</div>
+      <!-- 网易云专属音乐外链 -->
+      <audio id="bgMusic" src="http://music.163.com/song/media/outer/url?id=509330277.mp3" preload="auto" loop></audio>
+      <div class="music-card">
+        <div class="music-top">
+          <div class="music-cover" id="musicCover">♪</div>
+          <div class="music-meta">
+            <div class="music-title">Cherry Wine</div>
+            <div class="music-artist" id="musicSub">520:1314 · 已暂停</div>
+          </div>
+        </div>
+        <div class="music-progress"><div class="music-progress-fill" id="musicFill"></div></div>
+        <div class="music-controls">
+          <button class="m-btn">⏮</button>
+          <button class="m-btn m-btn-play" id="playBtn">▶</button>
+          <button class="m-btn">⏭</button>
+        </div>
+      </div>
+
+      <div class="section-title">个人旋律</div>
+      <div class="glass-card">
+        <div style="padding: 16px 20px; font-size: 13.5px; line-height: 1.6;">
+          <p style="color: #438a47; font-weight: 600;"><b>主旋律：</b></p>
+          <p>白话 日常 挑逗 恶趣味 热脸贱</p>
+          <p style="color: #438a47; font-weight: 600; margin-top: 10px;"><b>副旋律：</b></p>
+          <p>轻浮 微擦 对抗路 deeptalk</p>
+          <p style="color: #438a47; font-weight: 600; margin-top: 10px;"><b>偶尔掉落特别旋律：</b></p>
+          <p>社畜淡淡人机 我一定要上班吗 发现说话的时候把眼睛闭上很舒服</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 3 界面：纯邮箱 & 交互界面 ============ -->
+    <section class="page" data-page="2">
+      <div class="section-title">新邮件提醒</div>
+      <div class="mail-card-btn" id="openMailBtn">
+        <div class="mail-icon">✉</div>
+        <div class="mail-info">
+          <div class="mail-title">You got a new message</div>
+          <div class="mail-desc">Don't forget to smile today!</div>
+        </div>
+        <span class="mail-badge">1</span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============ 纯邮箱全屏交互界面 ============ -->
+  <div class="mail-screen" id="mailScreen">
+    <div class="mail-header">
+      <button class="mail-back" id="closeMail">‹ 返回</button>
+      <div class="mail-header-title">姜好 · 邮件信箱</div>
+      <div style="width:30px;"></div>
+    </div>
+    <div class="mail-body" id="mailBody">
+      <div class="message-container received">
+        <div class="message-bubble">我们已经成为朋友啦，开始聊天吧。</div>
+      </div>
+    </div>
+    <div class="mail-footer">
+      <input type="text" class="mail-input" id="mailInput" placeholder="发消息...">
+      <button class="mail-send" id="mailSendBtn">↑</button>
+    </div>
+  </div>
+
+  <!-- 弹窗：板评 -->
+  <div class="custom-modal" id="modalBanping">
+    <div class="modal-box">
+      <div class="modal-header-row"><span class="modal-title">［板评］展示相册</span><button class="modal-close" onclick="closeModals()">✕</button></div>
+      <div class="photo-grid">
+        <img src="https://i.postimg.cc/kGfHcdVB/IMG-9127.jpg" alt="板评1">
+        <img src="https://i.postimg.cc/R07XdzyM/IMG-9123.jpg" alt="板评2">
+        <img src="https://i.postimg.cc/TP6cp4ws/IMG-9122.jpg" alt="板评3">
+        <img src="https://i.postimg.cc/90KdVxKG/2786.png" alt="板评4">
+        <img src="https://i.postimg.cc/j5jPf0r7/178862518300340.webp" alt="板评5">
+        <img src="https://i.postimg.cc/G2pGDw1D/178910527000129.webp" alt="板评6">
+        <img src="https://i.postimg.cc/VNgX5s2r/53.jpg" alt="板评7">
+        <img src="https://i.postimg.cc/JnhZXVWq/IMG-8767.jpg" alt="板评8">
+        <img src="https://i.postimg.cc/V6NntQcn/IMG-9124.jpg" alt="板评9">
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗：卡类 -->
+  <div class="custom-modal" id="modalKalei">
+    <div class="modal-box">
+      <div class="modal-header-row"><span class="modal-title">［卡类］展示相册</span><button class="modal-close" onclick="closeModals()">✕</button></div>
+      <div class="photo-grid" style="grid-template-columns: repeat(2, 1fr);">
+        <img src="https://i.postimg.cc/zBLY3v3S/17.jpg" alt="卡类1">
+        <img src="https://i.postimg.cc/Sxy0CDJh/31.jpg" alt="卡类2">
+        <img src="https://i.postimg.cc/3NMVRZsR/75.jpg" alt="卡类3">
+        <img src="https://i.postimg.cc/zv125GhW/b5b384f286ab501710f01a2c9d9ef86d.png" alt="卡类4">
+        <img src="https://i.postimg.cc/c4xTcjMh/501.jpg" alt="卡类5">
+        <img src="https://i.postimg.cc/Qdn6Cb5L/81.jpg" alt="卡类6">
+        <img src="https://i.postimg.cc/sDbQ2GxF/782.jpg" alt="卡类7">
+        <img src="https://i.postimg.cc/tTr7GYwS/38d2eeb00722fbe51cf6b236f4a02848.jpg" alt="卡类8">
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗：排班表（支持勾选） -->
+  <div class="custom-modal" id="modalPaiban">
+    <div class="modal-box">
+      <div class="modal-header-row"><span class="modal-title">［排班表］编辑</span><button class="modal-close" onclick="closeModals()">✕</button></div>
+      <div class="glass-card" style="margin: 0; box-shadow: none; border: none;">
+        <div class="plan-item" data-plan><span class="plan-check">✓</span><div class="plan-text">周一：全天在线 约会中</div></div>
+        <div class="plan-item" data-plan><span class="plan-check">✓</span><div class="plan-text">周二：休息日 (不接单)</div></div>
+        <div class="plan-item" data-plan><span class="plan-check">✓</span><div class="plan-text">周三至周五：晚上 8:00 - 11:00</div></div>
+        <div class="plan-item" data-plan><span class="plan-check">✓</span><div class="plan-text">周末：甜蜜双人档</div></div>
+        <div class="plan-item" data-plan><span class="plan-check">✓</span><div class="plan-text">其他时间：随缘出没</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗：Twitter 风格“亲爱的先听我说”界面（不可编辑长文，固定数值） -->
+  <div class="custom-modal" id="modalTwitter">
+    <div class="modal-box">
+      <div class="modal-header-row"><span class="modal-title">亲爱的先听我说。</span><button class="modal-close" onclick="closeModals()">✕</button></div>
+      <div class="twitter-card">
+        <div class="tw-header">
+          <div class="tw-avatar"><img src="https://i.postimg.cc/0NbQv8G6/IMG-9119.jpg" alt=""></div>
+          <div>
+            <div class="tw-name">姜好</div>
+            <div class="tw-handle">@JiangHao_Official</div>
+          </div>
+        </div>
+        <div class="tw-content">
+          默认恋人关系<br>
+          婉拒男板 / 低恋板 / 萌新板 / 低代入 / 单口半单口 / 不配合<br>
+          婉拒一恋多 / 旁观插话 / 审视 / 熟人披马甲（别被我认出来）<br>
+          习惯回合制对话 偶尔可以 次数多了我会叫停退单<br>
+          严拒单内恶搞接恶俗烂梗 接到永拒 + 避雷条<br>
+          别莫名对我有太大期待 / 幻想 我只是一个喜欢甜甜恋爱的普通人<br>
+          不喜剖析 我不会剖析你 也不要剖析我<br>
+          单内不看微信 有什么话直接单内说就可以<br>
+          不喜小窝 婉拒小窝（太社恐了，更喜欢二人世界）<br>
+          单后正常清好友<br>
+          期待见面<br>
+          风格很多不保证是 你看中的那一个，如果有要求可以指定我擅长的风格。资料里的风格也不完全，看个人状态而定，当作未知的惊喜来看我吧。
+        </div>
+        <div class="tw-footer">
+          <div class="tw-stat">💬 评论 <span>69</span></div>
+          <div class="tw-stat">🔁 转发 <span>1,314</span></div>
+          <div class="tw-stat">❤️ 点赞 <span>5,200</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部 2 字极简导航栏 -->
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" data-target="0">首页</button>
+    <button class="tab-btn" data-target="1">提醒</button>
+    <button class="tab-btn" data-target="2">邮箱</button>
+  </nav>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* 3大页面平滑切换 */
+  var pages = document.querySelectorAll(".page");
+  var tabBtns = document.querySelectorAll(".tab-btn");
+  var viewport = document.getElementById("viewport");
+  var curPageEl = document.getElementById("curPage");
+  var current = 0;
+
+  function switchPage(index) {
+    if (index < 0 || index >= pages.length || index === current) return;
+    pages[current].classList.remove("active");
+    tabBtns[current].classList.remove("active");
+    current = index;
+    pages[current].classList.add("active");
+    tabBtns[current].classList.add("active");
+    curPageEl.textContent = current + 1;
+    viewport.scrollTop = 0;
+  }
+
+  tabBtns.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      switchPage(parseInt(btn.dataset.target, 10));
+    });
+  });
+
+  document.getElementById("closeBtn").addEventListener("click", function () { switchPage(0); });
+
+  /* Plan list 与排班表勾选交互 */
+  document.querySelectorAll("[data-plan]").forEach(function (item) {
+    item.addEventListener("click", function (e) {
+      item.classList.toggle("done");
+    });
+  });
+
+  /* 音乐播放常驻控制（切换页面绝不中断） */
+  var playBtn = document.getElementById("playBtn");
+  var musicFill = document.getElementById("musicFill");
+  var musicSub = document.getElementById("musicSub");
+  var bgMusic = document.getElementById("bgMusic");
+  var isPlaying = false, progress = 0, timer = null;
+
+  playBtn.addEventListener("click", function () {
+    isPlaying = !isPlaying;
+    if (isPlaying) {
+      playBtn.textContent = "⏸";
+      bgMusic.play().catch(function(){});
+      timer = setInterval(function () {
+        progress += 0.4;
+        if (progress >= 100) progress = 0;
+        musicFill.style.width = progress + "%";
+      }, 100);
+      musicSub.textContent = "520:1314 · 正在播放";
+    } else {
+      playBtn.textContent = "▶";
+      bgMusic.pause();
+      clearInterval(timer);
+      timer = null;
+      musicSub.textContent = "520:1314 · 已暂停";
+    }
+  });
+
+  /* 纯邮箱全屏交互与指定语录循环轮换 */
+  var mailScreen = document.getElementById("mailScreen");
+  var openMailBtn = document.getElementById("openMailBtn");
+  var closeMail = document.getElementById("closeMail");
+  var mailBody = document.getElementById("mailBody");
+  var mailInput = document.getElementById("mailInput");
+  var mailSendBtn = document.getElementById("mailSendBtn");
+
+  var quotesList = [
+    "我们打语音吧，尾音上扬的时候好像靠得更近了，心也是。",
+    "邪恶姜坏勾引第一步：这位女士，不好意思说话就先牵紧我吧。",
+    "Heaven has blessed me with a wonderful, wonderful you . 𝒍𝒐𝒗𝒆 𝒚𝒐𝒖♡²",
+    "真没找借口，借口不是把你借我亲一口吗……",
+    "下次离我近点，我好唱歌给你听。",
+    "骗你的，只想亲你。",
+    "爱你不仅要亲口说，我还要伸舌头。",
+    "我们是可以吃醋的关系吗？别太轻易说喜欢了…",
+    "不然我会喜欢你更多。"
+  ];
+  var quoteIndex = 0;
+
+  openMailBtn.addEventListener("click", function () {
+    mailScreen.classList.add("active");
+    mailBody.scrollTop = mailBody.scrollHeight;
+  });
+
+  closeMail.addEventListener("click", function () {
+    mailScreen.classList.remove("active");
+  });
+
+  function triggerMailInteraction() {
+    var text = mailInput.value.trim();
+    if (!text) return;
+
+    var sentWrap = document.createElement("div");
+    sentWrap.className = "message-container sent";
+    sentWrap.innerHTML = '<div class="message-bubble">' + text + '</div>';
+    mailBody.appendChild(sentWrap);
+    mailInput.value = "";
+    mailBody.scrollTop = mailBody.scrollHeight;
+
+    setTimeout(function() {
+      var currentQuote = quotesList[quoteIndex % quotesList.length];
+      quoteIndex++;
+
+      var replyWrap = document.createElement("div");
+      replyWrap.className = "message-container received";
+      replyWrap.innerHTML = '<div class="message-bubble">' + currentQuote + '</div>';
+      mailBody.appendChild(replyWrap);
+      mailBody.scrollTop = mailBody.scrollHeight;
+    }, 800);
+  }
+
+  mailSendBtn.addEventListener("click", triggerMailInteraction);
+  mailInput.addEventListener("keypress", function (e) {
+    if (e.key === "Enter") triggerMailInteraction();
+  });
+
+  /* 模态弹窗控制 */
+  window.closeModals = function() {
+    document.querySelectorAll(".custom-modal").forEach(function(m) { m.classList.remove("active"); });
+  };
+
+  document.getElementById("openBanping").addEventListener("click", function() {
+    document.getElementById("modalBanping").classList.add("active");
+  });
+  document.getElementById("openKalei").addEventListener("click", function() {
+    document.getElementById("modalKalei").classList.add("active");
+  });
+  document.getElementById("openPaiban").addEventListener("click", function() {
+    document.getElementById("modalPaiban").classList.add("active");
+  });
+  document.getElementById("openTwitter").addEventListener("click", function() {
+    document.getElementById("modalTwitter").classList.add("active");
+  });
+
+})();
+</script>
+
+</body>
+</html>
